@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/Revolyssup/go-rate-limit/pkg/limiter"
+	"github.com/Revolyssup/go-rate-limit/pkg/store"
 	redis "github.com/redis/go-redis/v9"
 )
 
@@ -55,6 +56,7 @@ func (r *RedisOptions) Set(rl *RateLimiter) {
 	rl.redisClient = redis.NewClusterClient(&redis.ClusterOptions{
 		Addrs: r.Addrs,
 	})
+	rl.limiter.InitStore(store.NewRedisStore(rl.redisClient))
 }
 
 func NewRateLimiter(lim limiter.Limiter, key Key, opts ...Options) (*RateLimiter, error) {
@@ -86,12 +88,7 @@ func (rl *RateLimiter) RateLimit(h http.Handler) http.Handler {
 			rejected bool
 		)
 		val := rl.key.GetValue(r)
-		if rl.redisClient != nil {
-			//TODO: TO BE IMPLEMENTED
-
-		} else {
-			delay, rejected = rl.limiter.Limit(val)
-		}
+		delay, rejected = rl.limiter.Limit(val)
 		if rejected {
 			w.Header().Set(LIMIT, fmt.Sprintf("%d", rl.limiter.GetLimit()))
 			w.WriteHeader(429)
