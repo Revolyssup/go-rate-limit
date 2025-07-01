@@ -10,8 +10,9 @@ Very small and simple Go implementation of rate limiter
 ## Supported algorithms
 
 - leaky-bucket
+- fixed window
 
 ## TBD
 
-- fixed window
+- sliding window
 - tocket bucket
